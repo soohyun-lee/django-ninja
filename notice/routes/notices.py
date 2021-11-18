@@ -1,0 +1,144 @@
+from django.http.response import Http404, JsonResponse
+from django.shortcuts import get_list_or_404
+from django.db.models import F
+
+from ninja import Router
+
+from notice.models import Notice, User
+from notice.schema import (
+    NoticeListSchema, 
+    NoticeSchema, 
+    ErrorSchema,
+    NoticeResponseSchema,
+    LikeCountSchema,
+    SuccessSchema,
+    DeleteSchema
+)
+
+
+router = Router()
+
+@router.post("", response={200: NoticeListSchema, 400: ErrorSchema})
+def notice_register(request, payload : NoticeSchema):
+    try:
+        notice = Notice.objects.create(
+            content = payload.content,
+            password = payload.password
+        )
+
+        return 200, NoticeListSchema(
+            id = notice.id,
+            content=payload.content,
+            like_count = notice.like_count,
+            created_at = notice.created_at,
+        )
+    
+    except KeyError as e:
+        return 404, ErrorSchema(
+            message="key error",
+            error_code=f"400{'1'.zfill(4)}",
+            detail=str(e),
+        )
+
+
+@router.get("", response={200:NoticeResponseSchema, 400: ErrorSchema})
+def notice_list(request):
+    try:
+        return 200, NoticeResponseSchema(result=list(Notice.objects.all()))
+    
+    except ValueError as e:
+        return 404, ErrorSchema(
+            message="value error",
+            error_code=f"400{'1'.zfill(4)}",
+            detail=str(e),
+        )
+
+
+@router.post("/like", response={200: NoticeListSchema, 400: ErrorSchema})
+def notice_register(request, payload : LikeCountSchema):
+    try:
+        notice = Notice.objects.get(
+            id = payload.id
+        )
+        notice.like_count += 1
+        notice.save()
+
+        return 200, NoticeListSchema(
+            id = notice.id,
+            content=notice.content,
+            like_count = notice.like_count,
+            created_at = notice.created_at,
+        )
+    
+    except KeyError as e:
+        return 404, ErrorSchema(
+            message="key error",
+            error_code=f"400{'1'.zfill(4)}",
+            detail=str(e),
+        )
+
+
+@router.put("", response={200: NoticeListSchema, 400: ErrorSchema})
+def notice_register(request, payload : NoticeSchema):
+    try:
+        notice = Notice.objects.filter(
+            id = payload.id
+        )
+
+        if notice[0].password == payload.password:
+            notice.update(
+                content = payload.content
+            )
+
+            return 200, NoticeListSchema(
+                content=payload.content,
+                like_count = notice[0].like_count,
+                created_at = notice[0].created_at,
+            )
+        
+        raise ValueError('비밀번호가 일치하지 않습니다.')
+
+    except ValueError as value_error:
+        return 400, ErrorSchema(
+            message="값을 다시 확인해주세요.",
+            error_code=f"400{'2'.zfill(4)}",
+            detail=str(value_error),
+        )
+    
+    except KeyError as e:
+        return 404, ErrorSchema(
+            message="key error",
+            error_code=f"400{'1'.zfill(4)}",
+            detail=str(e),
+        )
+
+
+@router.delete("", response={200: SuccessSchema, 400: ErrorSchema})
+def notice_register(request, payload : DeleteSchema):
+    try:
+        notice = Notice.objects.get(
+            id = payload.id
+        )
+
+        if notice.password == payload.password:
+            notice.delete()
+            
+            return 200, SuccessSchema(
+                message = "삭제 성공"
+            )
+        
+        raise ValueError('비밀번호가 일치하지 않습니다.')
+
+    except ValueError as value_error:
+        return 400, ErrorSchema(
+            message="값을 다시 확인해주세요.",
+            error_code=f"400{'2'.zfill(4)}",
+            detail=str(value_error),
+        )
+    
+    except KeyError as e:
+        return 404, ErrorSchema(
+            message="key error",
+            error_code=f"400{'1'.zfill(4)}",
+            detail=str(e),
+        )
