@@ -43,3 +43,7 @@ class SuccessSchema(Schema):
 class DeleteSchema(Schema):
     id: int = None
     password: str = None
+
+
+class SearchSchema(Schema):
+    keyword: str = None

@@ -13,7 +13,8 @@ from notice.schema import (
     LikeCountSchema,
     SuccessSchema,
     DeleteSchema,
-    NoticeEditSchema
+    NoticeEditSchema,
+    SearchSchema
 )
 
 
@@ -43,8 +44,12 @@ def notice_register(request, payload : NoticeSchema):
 
 
 @router.get("", response={200:NoticeResponseSchema, 400: ErrorSchema})
-def notice_list(request):
+def notice_list(request, keyword:str = None):
     try:
+        if keyword:
+            return 200, NoticeResponseSchema(result=list(Notice.objects.filter(
+                content__icontains = keyword
+            )))
         return 200, NoticeResponseSchema(result=list(Notice.objects.all()))
     
     except ValueError as e:
