@@ -5,6 +5,11 @@ from django.db.models.fields import DateTimeField
 from ninja.schema import Schema
 
 class NoticeSchema(Schema):
+    password: str = None
+    content: str = None
+
+
+class NoticeEditSchema(Schema):
     id: int = None
     password: str = None
     content: str = None

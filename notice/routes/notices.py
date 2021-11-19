@@ -12,7 +12,8 @@ from notice.schema import (
     NoticeResponseSchema,
     LikeCountSchema,
     SuccessSchema,
-    DeleteSchema
+    DeleteSchema,
+    NoticeEditSchema
 )
 
 
@@ -79,7 +80,7 @@ def notice_register(request, payload : LikeCountSchema):
 
 
 @router.put("", response={200: NoticeListSchema, 400: ErrorSchema})
-def notice_register(request, payload : NoticeSchema):
+def notice_register(request, payload : NoticeEditSchema):
     try:
         notice = Notice.objects.filter(
             id = payload.id
@@ -91,6 +92,7 @@ def notice_register(request, payload : NoticeSchema):
             )
 
             return 200, NoticeListSchema(
+                id = payload.id,
                 content=payload.content,
                 like_count = notice[0].like_count,
                 created_at = notice[0].created_at,
