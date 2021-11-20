@@ -3,6 +3,7 @@ from django.shortcuts import get_list_or_404
 from django.db.models import F
 
 from ninja import Router
+from pydantic.types import Json
 
 from notice.models import Notice, User
 from notice.schema import (
@@ -33,6 +34,7 @@ def notice_register(request, payload : NoticeSchema):
             content=payload.content,
             like_count = notice.like_count,
             created_at = notice.created_at,
+            comment_count = notice.comment_set.all().count()
         )
     
     except KeyError as e:
@@ -47,11 +49,28 @@ def notice_register(request, payload : NoticeSchema):
 def notice_list(request, keyword:str = None):
     try:
         if keyword:
-            return 200, NoticeResponseSchema(result=list(Notice.objects.filter(
-                content__icontains = keyword
-            )))
-        return 200, NoticeResponseSchema(result=list(Notice.objects.all()))
-    
+            notice_list = [{
+                'id' : notice.id,
+                'content' : notice.content,
+                'created_at' : notice.created_at,
+                'like_count' : notice.like_count,
+                'comment_count' : notice.comment_set.all().count()
+            } for notice in Notice.objects.filter(
+                    content__icontains = keyword
+                )]
+
+            return 200, NoticeResponseSchema(result=list(notice_list))
+        
+        notice_list = [{
+            'id' : notice.id,
+            'content' : notice.content,
+            'created_at' : notice.created_at,
+            'like_count' : notice.like_count,
+            'comment_count' : notice.comment_set.all().count()
+        } for notice in Notice.objects.all()]
+        
+        return 200, NoticeResponseSchema(result=list(notice_list))
+        
     except ValueError as e:
         return 404, ErrorSchema(
             message="value error",
@@ -74,6 +93,7 @@ def notice_register(request, payload : LikeCountSchema):
             content=notice.content,
             like_count = notice.like_count,
             created_at = notice.created_at,
+            comment_count = notice.comment_set.all().count()
         )
     
     except KeyError as e:
@@ -101,6 +121,7 @@ def notice_register(request, payload : NoticeEditSchema):
                 content=payload.content,
                 like_count = notice[0].like_count,
                 created_at = notice[0].created_at,
+                comment_count = notice[0].comment_set.all().count()
             )
         
         raise ValueError('비밀번호가 일치하지 않습니다.')
