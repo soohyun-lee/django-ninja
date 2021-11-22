@@ -1,5 +1,4 @@
 from django.http.response import Http404, JsonResponse
-from django.shortcuts import get_list_or_404
 from django.db.models import F
 
 from ninja import Router
@@ -60,7 +59,7 @@ def notice_list(request, keyword:str = None):
                 } for comment in notice.comment_set.all()]
             } for notice in Notice.objects.filter(
                     content__icontains = keyword
-                )]
+                ).order_by('-created_at')]
 
             return 200, NoticeResponseSchema(result=list(notice_list))
         
@@ -73,7 +72,7 @@ def notice_list(request, keyword:str = None):
                 'id' : comment.id,
                 'comment' : comment.comment
             } for comment in notice.comment_set.all()]
-        } for notice in Notice.objects.all()]
+        } for notice in Notice.objects.all().order_by('-created_at')]
         
         return 200, NoticeResponseSchema(result=list(notice_list))
         
