@@ -18,16 +18,17 @@ class LikeCountSchema(Schema):
     id: int = None
 
 
-class NoticeListSchema(Schema):
-    id: int = None
-    content: str = None
-    created_at: datetime.datetime = None
-    like_count: int
-    comment_count: int
+# class NoticeListSchema(Schema):
+#     id: int = None
+#     content: str = None
+#     created_at: datetime.datetime = None
+#     like_count: int
+#     id: int = None
+#     comment: str = None
 
 
-class NoticeResponseSchema(Schema):
-    result : List[NoticeListSchema] = None
+# class NoticeResponseSchema(Schema):
+#     result : List[NoticeListSchema] = None
 
 
 class ErrorSchema(Schema):
@@ -61,26 +62,36 @@ class CommentResponseSchema(Schema):
 class CreateComment(Schema):
     notice_id: int = None
     comment: str = None
-    password: str = None
 
     class Config:
         schema_extra = {
             "example": {
                 "notice_id": "게시글 id - integer",
                 "comment": "댓글",
-                "password": "댓글 비밀번호"
             }
         }
 
 class CommentDeleteSchema(Schema):
     id: int = None
-    password: str = None
 
     class Config:
         schema_extra = {
         "example": {
             "id": "댓글 고유 id - integer",
-            "password": "댓글 비밀번호"
         }
     }
 
+class CommentListSchema(Schema):
+    id : int
+    comment : str
+
+class NoticeListSchema(Schema):
+    id: int = None
+    content: str = None
+    created_at: datetime.datetime = None
+    like_count: int
+    comment_list : List[CommentListSchema] = None
+
+
+class NoticeResponseSchema(Schema):
+    result : List[NoticeListSchema] = None

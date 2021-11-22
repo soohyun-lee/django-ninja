@@ -21,7 +21,6 @@ class User(models.Model):
 class Comment(models.Model):
     notice = models.ForeignKey(Notice, on_delete=models.CASCADE)
     comment = models.TextField(null=True, default=None)
-    password = models.CharField(max_length=50, default=None)
 
     class Meta:
         db_table = 'comments'

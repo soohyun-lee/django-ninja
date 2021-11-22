@@ -54,7 +54,10 @@ def notice_list(request, keyword:str = None):
                 'content' : notice.content,
                 'created_at' : notice.created_at,
                 'like_count' : notice.like_count,
-                'comment_count' : notice.comment_set.all().count()
+                'comment_list' : [{
+                    'id' : comment.id,
+                    'comment' : comment.comment
+                } for comment in notice.comment_set.all()]
             } for notice in Notice.objects.filter(
                     content__icontains = keyword
                 )]
@@ -66,7 +69,10 @@ def notice_list(request, keyword:str = None):
             'content' : notice.content,
             'created_at' : notice.created_at,
             'like_count' : notice.like_count,
-            'comment_count' : notice.comment_set.all().count()
+            'comment_list' : [{
+                'id' : comment.id,
+                'comment' : comment.comment
+            } for comment in notice.comment_set.all()]
         } for notice in Notice.objects.all()]
         
         return 200, NoticeResponseSchema(result=list(notice_list))
@@ -141,7 +147,7 @@ def notice_register(request, payload : NoticeEditSchema):
         )
 
 
-@router.delete("", response={200: SuccessSchema, 400: ErrorSchema})
+@router.put("/delete", response={200: SuccessSchema, 400: ErrorSchema})
 def notice_register(request, payload : DeleteSchema):
     try:
         notice = Notice.objects.get(
