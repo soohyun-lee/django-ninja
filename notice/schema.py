@@ -53,6 +53,8 @@ class SearchSchema(Schema):
 class CommentListScheme(Schema):
     id: int = None
     comment: str = None
+    created_at: datetime.datetime = None
+
 
 
 class CommentResponseSchema(Schema):
@@ -84,6 +86,8 @@ class CommentDeleteSchema(Schema):
 class CommentListSchema(Schema):
     id : int
     comment : str
+    created_at: datetime.datetime
+
 
 class NoticeListSchema(Schema):
     id: int = None

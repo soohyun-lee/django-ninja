@@ -55,8 +55,9 @@ def notice_list(request, keyword:str = None):
                 'like_count' : notice.like_count,
                 'comment_list' : [{
                     'id' : comment.id,
-                    'comment' : comment.comment
-                } for comment in notice.comment_set.all()]
+                    'comment' : comment.comment,
+                    'created_at' : comment.created_at
+                } for comment in notice.comment_set.all().order_by('-created_at')]
             } for notice in Notice.objects.filter(
                     content__icontains = keyword
                 ).order_by('-created_at')]
@@ -70,8 +71,9 @@ def notice_list(request, keyword:str = None):
             'like_count' : notice.like_count,
             'comment_list' : [{
                 'id' : comment.id,
-                'comment' : comment.comment
-            } for comment in notice.comment_set.all()]
+                'comment' : comment.comment,
+                'created_at' : comment.created_at
+            } for comment in notice.comment_set.all().order_by('-created_at')]
         } for notice in Notice.objects.all().order_by('-created_at')]
         
         return 200, NoticeResponseSchema(result=list(notice_list))

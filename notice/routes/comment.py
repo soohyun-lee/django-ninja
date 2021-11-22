@@ -27,7 +27,8 @@ def comment_register(request, payload : CreateComment):
 
         return 200, CommentListScheme(
             id = notice_comment.id,
-            comment = notice_comment.comment
+            comment = notice_comment.comment,
+            created_at = notice_comment.created_at
         )
     
     except KeyError as e:
