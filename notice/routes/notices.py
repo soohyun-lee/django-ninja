@@ -73,7 +73,7 @@ def notice_list(request, keyword:str = None):
                 'id' : comment.id,
                 'comment' : comment.comment,
                 'created_at' : comment.created_at
-            } for comment in notice.comment_set.all().order_by('-created_at')]
+            } for comment in notice.comment_set.all().order_by('created_at')]
         } for notice in Notice.objects.all().order_by('-created_at')]
         
         return 200, NoticeResponseSchema(result=list(notice_list))
