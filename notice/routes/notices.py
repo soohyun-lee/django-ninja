@@ -25,7 +25,7 @@ def notice_register(request, payload : NoticeSchema):
     try:
         notice = Notice.objects.create(
             content = payload.content,
-            password = payload.password
+            password = str(payload.password)
         )
 
         return 200, NoticeListSchema(
@@ -155,7 +155,7 @@ def notice_register(request, payload : DeleteSchema):
             id = payload.id
         )
 
-        if notice.password == payload.password:
+        if notice.password == str(payload.password):
             notice.delete()
             
             return 200, SuccessSchema(
