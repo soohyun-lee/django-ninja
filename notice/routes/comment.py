@@ -1,21 +1,18 @@
-from django.http.response import Http404, JsonResponse
-from django.shortcuts import get_list_or_404
-from django.db.models import F
-
 from ninja import Router
 
-from notice.models import Notice, User, Comment
+from notice.models import (
+    Comment
+)
 from notice.schema import (
     ErrorSchema,
     CommentListScheme,
     CreateComment,
-    CommentResponseSchema,
     SuccessSchema,
-    CommentDeleteSchema
 )
 
 
 router = Router()
+
 
 @router.post("", response={200: CommentListScheme, 400: ErrorSchema})
 def comment_register(request, payload : CreateComment):
@@ -30,7 +27,7 @@ def comment_register(request, payload : CreateComment):
             comment = notice_comment.comment,
             created_at = notice_comment.created_at
         )
-    
+
     except KeyError as e:
         return 404, ErrorSchema(
             message="key error",
@@ -47,7 +44,7 @@ def comment_register(request, payload : CreateComment):
 #         return 200, CommentResponseSchema(result=list(Comment.objects.filter(
 #             notice_id=notice_id
 #         )))
-    
+
 #     except ValueError as e:
 #         return 404, ErrorSchema(
 #             message="value error",
@@ -63,18 +60,18 @@ def comment_delete(request, id:int):
             id = id
         )
         comment.delete()
-            
+
         return 200, SuccessSchema(
             message = "삭제 성공"
         )
-        
+
     except ValueError as value_error:
         return 400, ErrorSchema(
             message="값을 다시 확인해주세요.",
             error_code=f"400{'2'.zfill(4)}",
             detail=str(value_error),
         )
-    
+
     except KeyError as e:
         return 404, ErrorSchema(
             message="key error",
