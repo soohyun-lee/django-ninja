@@ -6,7 +6,16 @@ from ninja.schema import Schema
 class NoticeSchema(Schema):
     password: str = None
     content: str = None
+    category: str = None
 
+    class Config:
+        schema_extra = {
+        "example": {
+            "password": "비밀번호",
+            "content": "내용",
+            "category": "댄에게 말해요 / 대나무숲 (둘 중 하나의 스트링으로 전달)",
+        }
+    }
 
 class NoticeEditSchema(Schema):
     id: int = None
@@ -94,8 +103,13 @@ class NoticeListSchema(Schema):
     content: str = None
     created_at: datetime.datetime = None
     like_count: int
+    is_like: bool = None
     comment_list : List[CommentListSchema] = None
 
 
 class NoticeResponseSchema(Schema):
     result : List[NoticeListSchema] = None
+
+
+class SignupSchema(Schema):
+    email: str = None

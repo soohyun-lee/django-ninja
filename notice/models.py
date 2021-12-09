@@ -1,21 +1,39 @@
 from django.db import models
 
+
+class User(models.Model):
+    name = models.CharField(max_length=50)
+    email = models.CharField(max_length=100, default=None)
+    auth_code = models.CharField(max_length=50, default=None)
+
+    class Meta:
+        db_table = 'users'
+
+
+class Category(models.Model):
+    name = models.CharField(max_length=50, default=None)
+
+    class Meta:
+        db_table = 'categories'
+
+
 class Notice(models.Model):
     content = models.TextField()
     password = models.CharField(max_length=50, default=None)
     like_count = models.IntegerField(null=True, default=0)
     created_at = models.DateTimeField(auto_now_add=True)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, null=True)
     
     class Meta:
         db_table = 'notices'
 
 
-class User(models.Model):
-    name = models.CharField(max_length=50)
-    phone = models.IntegerField()
-
+class UserLike(models.Model):
+    notice = models.ForeignKey(Notice, on_delete=models.CASCADE, null=True)
+    user_ip = models.CharField(max_length=100, default=None)
+    
     class Meta:
-        db_table = 'users'
+        db_table = 'user_like'
 
 
 class Comment(models.Model):
