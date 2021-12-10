@@ -5,6 +5,7 @@ from django.shortcuts import get_object_or_404
 from ninja import Router
 from pydantic.errors import CallableError
 from pydantic.types import Json
+from ipware import get_client_ip
 
 from notice.models import Notice, UserLike, Category
 from notice.schema import (
@@ -50,13 +51,15 @@ def notice_register(request, payload : NoticeSchema):
 @router.get("", response={200:NoticeResponseSchema, 400: ErrorSchema})
 def notice_list(request, category:str = None):
     try:
-        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        # x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
         
-        if x_forwarded_for:
-            ip = x_forwarded_for.split(',')[0]
-        else:
-            ip = request.META.get('REMOTE_ADDR')
+        # if x_forwarded_for:
+        #     ip = x_forwarded_for.split(',')[0]
+        # else:
+        #     ip = request.META.get('REMOTE_ADDR')
+        ip, is_routable = get_client_ip(request)
 
+        # if ip is not None:
         # 검색 기능 보류
         # if keyword:
         #     notice_list = [{
