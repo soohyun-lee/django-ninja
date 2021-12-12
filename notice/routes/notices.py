@@ -1,13 +1,16 @@
+import random
+import socket
+
 from django.http.response import Http404, JsonResponse
 from django.db.models import F
 from django.shortcuts import get_object_or_404
+from django.core.mail import EmailMessage
 
 from ninja import Router
 from pydantic.errors import CallableError
 from pydantic.types import Json
-from ipware import get_client_ip
 
-from notice.models import Notice, UserLike, Category
+from notice.models import Notice, UserLike, Category, User
 from notice.schema import (
     NoticeListSchema, 
     NoticeSchema, 
@@ -17,11 +20,82 @@ from notice.schema import (
     SuccessSchema,
     DeleteSchema,
     NoticeEditSchema,
-    SearchSchema
+    UserSchema,
+    AuthCheckSchema,
+    UserAuthSchema
 )
 
 
 router = Router()
+
+
+@router.post("/user", response={200: SuccessSchema, 400: ErrorSchema})
+def user_register(request, payload : UserSchema):
+    try:
+        user = get_object_or_404(User, email = payload.email)
+        if user:
+            code = random.sample(range(0,9),4)
+            auth_code = "".join(map(str, code))
+            
+            user.auth_code = auth_code
+            user.save()
+
+            email = EmailMessage(
+                '대나무숲 인증 메일', 
+                f'대나무 숲 인증 코드를 입력해주세요 : {auth_code}', 
+                to=[f"{payload.email}"])
+            
+            email_send = email.send()
+            
+            if email_send == 1:
+                return 200, SuccessSchema(
+                    message = "인증 메일 발송 성공",
+                )
+            else:
+                return 400, ErrorSchema(
+                    message="이메일 발송 실패",
+                    error_code=f"400{'1'.zfill(4)}",
+                    detail="이메일 발송 실패",
+                )
+        else:
+            return 400, ErrorSchema(
+                message="Does not exist User",
+                error_code=f"400{'1'.zfill(4)}",
+                detail="Does not exist User",
+            )
+
+    except KeyError as e:
+        return 404, ErrorSchema(
+            message="key error",
+            error_code=f"400{'1'.zfill(4)}",
+            detail=str(e),
+        )
+
+
+@router.post("/user/check", response={200: UserAuthSchema, 400: ErrorSchema})
+def auth_check(request, payload : AuthCheckSchema):
+    try:
+        user = get_object_or_404(User, email=payload.email)
+        if user.auth_code == payload.code:
+            return 200, UserAuthSchema(
+                message = "인증 성공",
+                user_id = user.id
+            )
+
+        else:
+            return 400, ErrorSchema(
+                message="인증번호가 다릅니다",
+                error_code=f"400{'1'.zfill(4)}",
+                detail="인증번호가 다릅니다",
+            )
+
+    except KeyError as e:
+        return 404, ErrorSchema(
+            message="key error",
+            error_code=f"400{'1'.zfill(4)}",
+            detail=str(e),
+        )
+
 
 @router.post("", response={200: NoticeListSchema, 400: ErrorSchema})
 def notice_register(request, payload : NoticeSchema):
@@ -49,17 +123,9 @@ def notice_register(request, payload : NoticeSchema):
 
 
 @router.get("", response={200:NoticeResponseSchema, 400: ErrorSchema})
-def notice_list(request, category:str = None):
+def notice_list(request, category: str, user_id: str):
     try:
-        # x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
         
-        # if x_forwarded_for:
-        #     ip = x_forwarded_for.split(',')[0]
-        # else:
-        #     ip = request.META.get('REMOTE_ADDR')
-        ip, is_routable = get_client_ip(request)
-
-        # if ip is not None:
         # 검색 기능 보류
         # if keyword:
         #     notice_list = [{
@@ -83,8 +149,8 @@ def notice_list(request, category:str = None):
             'id' : notice.id,
             'content' : notice.content,
             'created_at' : notice.created_at,
-            'like_count' : notice.like_count,
-            'is_like' : True if UserLike.objects.filter(user_ip = ip, notice = notice) else False,
+            'like_count' : notice.userlike_set.all().count(),
+            'is_like' : True if UserLike.objects.filter(user_id = user_id, notice = notice) else False,
             'comment_list' : [{
                 'id' : comment.id,
                 'comment' : comment.comment,
@@ -107,13 +173,6 @@ def notice_list(request, category:str = None):
 @router.post("/like", response={200: NoticeListSchema, 400: ErrorSchema})
 def notice_register(request, payload : LikeCountSchema):
     try:
-        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-        
-        if x_forwarded_for:
-            ip = x_forwarded_for.split(',')[0]
-        else:
-            ip = request.META.get('REMOTE_ADDR')
-        
         notice = Notice.objects.get(
             id = payload.id
         )
@@ -122,14 +181,15 @@ def notice_register(request, payload : LikeCountSchema):
 
         UserLike.objects.create(
             notice = notice,
-            user_ip = ip
+            user_id = payload.user_id
         )
 
         return 200, NoticeListSchema(
             id = notice.id,
             content=notice.content,
             like_count = notice.like_count,
-            is_like = True if UserLike.objects.filter(user_ip = ip, notice = notice) else False,
+            is_like = True if UserLike.objects.filter(
+                user_id = payload.user_id, notice = notice) else False,
             created_at = notice.created_at,
             comment_count = notice.comment_set.all().count()
         )
@@ -145,13 +205,6 @@ def notice_register(request, payload : LikeCountSchema):
 @router.put("/nolike", response={200: NoticeListSchema, 400: ErrorSchema})
 def notice_register(request, payload : LikeCountSchema):
     try:
-        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-        
-        if x_forwarded_for:
-            ip = x_forwarded_for.split(',')[0]
-        else:
-            ip = request.META.get('REMOTE_ADDR')
-        
         notice = Notice.objects.get(
             id = payload.id
         )
@@ -160,14 +213,15 @@ def notice_register(request, payload : LikeCountSchema):
 
         UserLike.objects.filter(
             notice = notice,
-            user_ip = ip
+            user = payload.user_id
         ).delete()
 
         return 200, NoticeListSchema(
             id = notice.id,
             content=notice.content,
             like_count = notice.like_count,
-            is_like = True if UserLike.objects.filter(user_ip = ip, notice = notice) else False,
+            is_like = True if UserLike.objects.filter(
+                user_id = payload.user_id, notice = notice) else False,
             created_at = notice.created_at,
             comment_count = notice.comment_set.all().count()
         )
@@ -183,13 +237,6 @@ def notice_register(request, payload : LikeCountSchema):
 @router.put("", response={200: NoticeListSchema, 400: ErrorSchema})
 def notice_register(request, payload : NoticeEditSchema):
     try:
-        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-        
-        if x_forwarded_for:
-            ip = x_forwarded_for.split(',')[0]
-        else:
-            ip = request.META.get('REMOTE_ADDR')
-
         notice = Notice.objects.filter(
             id = payload.id
         )
@@ -203,7 +250,8 @@ def notice_register(request, payload : NoticeEditSchema):
                 id = payload.id,
                 content=payload.content,
                 like_count = notice[0].like_count,
-                is_like = True if UserLike.objects.filter(user_ip = ip, notice = notice[0]) else False,
+                is_like = True if UserLike.objects.filter(
+                    user_id = payload.user_id, notice = notice[0]) else False,
                 created_at = notice[0].created_at,
                 comment_count = notice[0].comment_set.all().count()
             )

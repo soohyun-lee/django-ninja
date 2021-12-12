@@ -21,10 +21,15 @@ class NoticeEditSchema(Schema):
     id: int = None
     password: str = None
     content: str = None
+    user_id: str = None
+    
+class UserSchema(Schema):
+    email: str = None
 
 
 class LikeCountSchema(Schema):
     id: int = None
+    user_id: int = None
 
 
 # class NoticeListSchema(Schema):
@@ -48,6 +53,12 @@ class ErrorSchema(Schema):
 
 class SuccessSchema(Schema):
     message : str
+    id: str = None
+
+
+class UserAuthSchema(Schema):
+    message: str
+    user_id: int = None
 
 
 class DeleteSchema(Schema):
@@ -55,8 +66,9 @@ class DeleteSchema(Schema):
     password: str = None
 
 
-class SearchSchema(Schema):
-    keyword: str = None
+class AuthCheckSchema(Schema):
+    email: str = None
+    code: str = None
 
 
 class CommentListScheme(Schema):

@@ -1,10 +1,11 @@
 from django.db import models
+from django.db.models.deletion import CASCADE
 
 
 class User(models.Model):
     name = models.CharField(max_length=50)
     email = models.CharField(max_length=100, default=None)
-    auth_code = models.CharField(max_length=50, default=None)
+    auth_code = models.CharField(max_length=50, default=None, null=True)
 
     class Meta:
         db_table = 'users'
@@ -30,7 +31,7 @@ class Notice(models.Model):
 
 class UserLike(models.Model):
     notice = models.ForeignKey(Notice, on_delete=models.CASCADE, null=True)
-    user_ip = models.CharField(max_length=100, default=None)
+    user = models.ForeignKey(User, on_delete=CASCADE, null=True)
     
     class Meta:
         db_table = 'user_like'
