@@ -1,5 +1,6 @@
 import random
-import socket
+import string
+import random
 
 from django.http.response import Http404, JsonResponse
 from django.db.models import F
@@ -37,12 +38,17 @@ def user_register(request, payload : UserSchema):
             code = random.sample(range(0,9),4)
             auth_code = "".join(map(str, code))
             
+            number_of_strings = 5
+            length_of_string = 8
+            for x in range(number_of_strings):
+                auth_code = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(length_of_string))
+
             user.auth_code = auth_code
             user.save()
 
             email = EmailMessage(
                 '대나무숲 인증 메일', 
-                f'대나무 숲 인증 코드를 입력해주세요 : {auth_code}', 
+                f'대나무 숲 인증 코드를 입력해주세요 : \n {auth_code}', 
                 to=[f"{payload.email}"])
             
             email_send = email.send()
@@ -109,7 +115,7 @@ def notice_register(request, payload : NoticeSchema):
         return 200, NoticeListSchema(
             id = notice.id,
             content=payload.content,
-            like_count = notice.like_count,
+            like_count = notice.userlike_set.all().count(),
             created_at = notice.created_at,
             comment_count = notice.comment_set.all().count()
         )
@@ -176,23 +182,32 @@ def notice_register(request, payload : LikeCountSchema):
         notice = Notice.objects.get(
             id = payload.id
         )
-        notice.like_count += 1
-        notice.save()
 
-        UserLike.objects.create(
-            notice = notice,
+        userlike = UserLike.objects.filter(
+            notice_id = payload.id,
             user_id = payload.user_id
         )
-
-        return 200, NoticeListSchema(
-            id = notice.id,
-            content=notice.content,
-            like_count = notice.like_count,
-            is_like = True if UserLike.objects.filter(
-                user_id = payload.user_id, notice = notice) else False,
-            created_at = notice.created_at,
-            comment_count = notice.comment_set.all().count()
-        )
+        if userlike:
+            return 400, ErrorSchema(
+                message="like error",
+                error_code=f"400{'1'.zfill(4)}",
+                detail="like error",
+            )
+        else:
+            UserLike.objects.create(
+                notice_id = payload.id,
+                user_id = payload.user_id
+            )
+        
+            return 200, NoticeListSchema(
+                id = notice.id,
+                content=notice.content,
+                like_count = notice.userlike_set.all().count(),
+                is_like = True if UserLike.objects.filter(
+                    user_id = payload.user_id, notice = notice) else False,
+                created_at = notice.created_at,
+                comment_count = notice.comment_set.all().count()
+            )
     
     except KeyError as e:
         return 404, ErrorSchema(
@@ -208,18 +223,16 @@ def notice_register(request, payload : LikeCountSchema):
         notice = Notice.objects.get(
             id = payload.id
         )
-        notice.like_count -= 1
-        notice.save()
-
+        
         UserLike.objects.filter(
-            notice = notice,
+            notice = payload.id,
             user = payload.user_id
         ).delete()
 
         return 200, NoticeListSchema(
             id = notice.id,
             content=notice.content,
-            like_count = notice.like_count,
+            like_count = notice.userlike_set.all().count(),
             is_like = True if UserLike.objects.filter(
                 user_id = payload.user_id, notice = notice) else False,
             created_at = notice.created_at,
@@ -249,7 +262,7 @@ def notice_register(request, payload : NoticeEditSchema):
             return 200, NoticeListSchema(
                 id = payload.id,
                 content=payload.content,
-                like_count = notice[0].like_count,
+                like_count = notice[0].userlike_set.all().count(),
                 is_like = True if UserLike.objects.filter(
                     user_id = payload.user_id, notice = notice[0]) else False,
                 created_at = notice[0].created_at,
@@ -302,3 +315,4 @@ def notice_register(request, payload : DeleteSchema):
             error_code=f"400{'1'.zfill(4)}",
             detail=str(e),
         )
+
