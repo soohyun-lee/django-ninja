@@ -69,6 +69,7 @@ class DeleteSchema(Schema):
 class AuthCheckSchema(Schema):
     email: str = None
     code: str = None
+    fcm_token: str = None
 
 
 class CommentListScheme(Schema):

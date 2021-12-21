@@ -6,7 +6,8 @@ class User(models.Model):
     name = models.CharField(max_length=50)
     email = models.CharField(max_length=100, default=None)
     auth_code = models.CharField(max_length=50, default=None, null=True)
-
+    fcm_token = models.TextField(null=True, default=None)
+    
     class Meta:
         db_table = 'users'
 

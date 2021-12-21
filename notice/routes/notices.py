@@ -25,7 +25,7 @@ from notice.schema import (
     AuthCheckSchema,
     UserAuthSchema
 )
-
+from notice.fcm import multi_send_fcm_message
 
 router = Router()
 
@@ -83,6 +83,9 @@ def auth_check(request, payload : AuthCheckSchema):
     try:
         user = get_object_or_404(User, email=payload.email)
         if user.auth_code == payload.code:
+            user.fcm_token = payload.fcm_token
+            user.save()
+
             return 200, UserAuthSchema(
                 message = "인증 성공",
                 user_id = user.id
@@ -111,6 +114,7 @@ def notice_register(request, payload : NoticeSchema):
             password = str(payload.password),
             category = Category.objects.get(name = payload.category)
         )
+        multi_send_fcm_message(notice)
 
         return 200, NoticeListSchema(
             id = notice.id,
