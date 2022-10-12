@@ -25,7 +25,6 @@ from notice.schema import (
     AuthCheckSchema,
     UserAuthSchema
 )
-from notice.fcm import multi_send_fcm_message
 
 router = Router()
 
@@ -47,8 +46,8 @@ def user_register(request, payload : UserSchema):
             user.save()
 
             email = EmailMessage(
-                '대나무숲 인증 메일', 
-                f'대나무 숲 인증 코드를 입력해주세요 : \n {auth_code}', 
+                '대나무숲 인증 메일',
+                f'대나무 숲 인증 코드를 입력해주세요 : \n {auth_code}',
                 to=[f"{payload.email}"])
             
             email_send = email.send()
@@ -114,7 +113,6 @@ def notice_register(request, payload : NoticeSchema):
             password = str(payload.password),
             category = Category.objects.get(name = payload.category)
         )
-        multi_send_fcm_message(notice)
 
         return 200, NoticeListSchema(
             id = notice.id,

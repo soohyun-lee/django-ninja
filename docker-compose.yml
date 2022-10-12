@@ -11,4 +11,4 @@ services:
       - "5002:8000"
       # - "443:7000"
     # entrypoint: /entrypoint.sh
-    command: gunicorn --bind :8000 --workers 3 --threads 2 --capture-output --access-logfile /logs/gunicorn-access.log --timeout 300 --env DJANGO_SETTINGS_MODULE=viva_notice.settings viva_notice.wsgi:application
+    command: gunicorn --bind :8000 --workers 3 --thread 2 --capture-output --access-logfile /logs/gunicorn-access.log --timeout 300 --env DJANGO_SETTINGS_MODULE=viva_notice.settings viva_notice.wsgi:application

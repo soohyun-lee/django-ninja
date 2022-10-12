@@ -2,13 +2,8 @@ import os
 import json
 from pathlib import Path
 
-import firebase_admin
-from firebase_admin import credentials
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
-FIREBASE_CREDENTIAL_KEY = json.loads(open("./vivanoticeServiceKey.json","r").read())
 
 
 # Quick-start development settings - unsuitable for production
@@ -77,8 +72,8 @@ DATABASES = {
         'NAME' : 'viva_notice',
         'USER': os.environ.get('NOTICE_USER'),
         'PASSWORD': os.environ.get('NOTICE_PASSWORD'),
-        'HOST': os.environ.get('NOTICE_HOST'),
-        'PORT': os.environ.get('NOTICE_PORT'),
+        'HOST': '61.82.87.35',
+        'PORT': 3306,
         'OPTIONS' : {
             'charset' : 'utf8mb4',
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",

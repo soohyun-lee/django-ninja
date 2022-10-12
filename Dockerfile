@@ -13,7 +13,7 @@ RUN apt-get update &&\
     apt-get install -y binutils libproj-dev gdal-bin
 
 # install mysql-server
-RUN apt-get install -y python3-dev default-libmysqlclient-dev build-essential gcc
+RUN apt-get install -y python3-dev default-libmysqlclient-dev build-essential
 
 
 # install dependancy
