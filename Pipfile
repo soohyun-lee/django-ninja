@@ -15,6 +15,7 @@ sqlparse = "==0.4.2"
 typing-extensions = "==4.0.0"
 Django = "==3.2.9"
 django-ninja = "*"
+firebase-admin = "*"
 
 [dev-packages]
 
