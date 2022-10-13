@@ -150,14 +150,14 @@ CORS_ALLOW_HEADERS = (
     'x-requested-with',
 )
 
-EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST = '211.46.114.9'
 # 메일을 호스트하는 서버
-EMAIL_PORT = '587'
+EMAIL_PORT = 25
 # gmail과의 통신하는 포트
 EMAIL_HOST_USER = os.environ.get('NOTICE_HOST_USER')
 # 발신할 이메일
 EMAIL_HOST_PASSWORD = os.environ.get('NOTICE_HOST_PASSWORD')
 # 발신할 메일의 비밀번호
-EMAIL_USE_TLS = True
+EMAIL_USE_TLS = False
 # TLS 보안 방법
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
