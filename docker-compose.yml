@@ -8,7 +8,16 @@ services:
       dockerfile: ./Dockerfile
     container_name: 'wikileaks-dev'
     ports:
-      - "5002:8000"
+      - "8000:8000"
       # - "443:7000"
     # entrypoint: /entrypoint.sh
     command: gunicorn --bind :8000 --workers 3 --threads 2 --capture-output --access-logfile /logs/gunicorn-access.log --timeout 300 --env DJANGO_SETTINGS_MODULE=viva_notice.settings viva_notice.wsgi:application
+    environment:
+      - API_ENV=${API_ENV}
+      - NOTICE_USER=${NOTICE_USER}
+      - NOTICE_PASSWORD=${NOTICE_PASSWORD}
+      - NOTICE_HOST=${NOTICE_HOST}
+      - NOTICE_PORT=${NOTICE_PORT}
+      - NOTICE_SECRET=${NOTICE_SECRET}
+      - NOTICE_HOST_USER=${NOTICE_HOST_USER}
+      - NOTICE_HOST_PASSWORD=${NOTICE_HOST_PASSWORD}
