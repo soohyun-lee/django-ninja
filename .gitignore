@@ -285,5 +285,5 @@ tags
 
 # env
 dev_env.sh
-
+local_env.sh
 # End of https://www.toptal.com/developers/gitignore/api/vim,visualstudiocode,macos,django,pythond
