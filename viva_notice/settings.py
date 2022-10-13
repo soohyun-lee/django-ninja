@@ -72,7 +72,7 @@ DATABASES = {
         'NAME' : 'viva_notice',
         'USER': os.environ.get('NOTICE_USER'),
         'PASSWORD': os.environ.get('NOTICE_PASSWORD'),
-        'HOST': '61.82.87.35',
+        'HOST': os.environ.get('NOTICE_HOST'),
         'PORT': 3306,
         'OPTIONS' : {
             'charset' : 'utf8mb4',
@@ -154,9 +154,9 @@ EMAIL_HOST = 'smtp.gmail.com'
 # 메일을 호스트하는 서버
 EMAIL_PORT = '587'
 # gmail과의 통신하는 포트
-EMAIL_HOST_USER = 'vivainno.lydia@gmail.com'
+EMAIL_HOST_USER = os.environ.get('NOTICE_HOST_USER')
 # 발신할 이메일
-EMAIL_HOST_PASSWORD = "aass4031**"
+EMAIL_HOST_PASSWORD = os.environ.get('NOTICE_HOST_PASSWORD')
 # 발신할 메일의 비밀번호
 EMAIL_USE_TLS = True
 # TLS 보안 방법
