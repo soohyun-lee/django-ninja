@@ -18,7 +18,7 @@ FIREBASE_CREDENTIAL_KEY = json.loads(open("./vivanoticeServiceKey.json","r").rea
 SECRET_KEY = os.environ.get('NOTICE_SECRET')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = False if os.environ.get('API_ENV') == 'prod' else False
 
 ALLOWED_HOSTS = ['*']
 
